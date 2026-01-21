@@ -1,60 +1,68 @@
 import { useState } from "react";
-import SkinmuseLogo2 from "../assets/images/skinmuselogo2.png";
 
 const Quiz = () => {
   const questions = [
     {
-      question: "How does your skin usually feel a few hours after washing it?",
+      question: "How does your skin look 3 hours after applying foundation?",
       options: [
-        "Tight or rough",
-        "Shiny or greasy",
-        "Shiny in T-zone, dry on cheeks",
-        "Comfortable and balanced",
-        "Itchy, red, or easily irritated",
+        "Patchy, flaky, or clinging to dry spots",
+        "Very shiny or the makeup is 'sliding' off",
+        "Oily on the nose/forehead but dry elsewhere",
+        "Smooth and still mostly in place",
+        "Red, bumpy, or feeling quite itchy",
       ],
     },
     {
-      question: "How often does your skin feel oily?",
-      options: ["Rarely", "Sometimes", "Often", "Almost always"],
-    },
-    {
-      question: "How does your skin react to the sun?",
+      question: "What is your primary concern when picking a base product?",
       options: [
-        "Burns easily",
-        "Tans gradually",
-        "Rarely burns or tans",
-        "Not sure",
+        "Adding moisture and a healthy glow",
+        "Controlling oil and staying matte",
+        "Finding a balance for different zones",
+        "Just evening out my natural tone",
+        "Avoiding ingredients that cause redness",
       ],
     },
     {
-      question: "How sensitive is your skin to skincare products?",
+      question: "How do your pores usually behave under makeup?",
       options: [
-        "Very sensitive, reacts easily",
-        "Somewhat sensitive",
-        "Not sensitive at all",
-        "Unsure",
+        "They are nearly invisible",
+        "They look large and get filled with oil",
+        "Only visible in the T-zone area",
+        "Normal and easy to cover",
+        "They often get inflamed or irritated",
       ],
     },
     {
-      question: "How would you describe your skin's overall texture?",
+      question: "Which finish do you usually prefer for your makeup?",
       options: [
-        "Rough or flaky",
-        "Oily and smooth",
-        "Combination (varies by area)",
-        "Soft and even",
-        "Red or irritated",
+        "Dewy and ultra-hydrating",
+        "Strictly matte and long-wearing",
+        "Natural or satin finish",
+        "Anything feels comfortable",
+        "Fragrance-free and hypoallergenic only",
+      ],
+    },
+    {
+      question: "If you use a face powder, how does it feel on your skin?",
+      options: [
+        "Too drying, makes me look cakey",
+        "Essential to stop me from looking greasy",
+        "Good for my nose, but bad for my cheeks",
+        "Sets my makeup perfectly",
+        "Sometimes makes my skin feel tight and itchy",
       ],
     },
   ];
 
   const skinTypeDescriptions = {
-    Dry: "Your skin tends to feel tight, flaky, or rough. It needs deep hydration and gentle care.",
-    Oily: "Your skin often looks shiny or greasy. Focus on lightweight, oil-controlling products.",
+    Dry: "Your skin needs moisture-rich formulas. We recommend cream-based blushes and hydrating foundations to keep your glow alive.",
+    Oily: "You suit matte, oil-free products. Look for long-wear primers and setting powders to keep your look locked in all day.",
     Combination:
-      "You have both oily and dry areas. Balanced care works best for you.",
-    Normal: "Your skin feels balanced and even. Gentle maintenance is key!",
+      "You need a versatile kit. Try mattifying your T-zone while using luminous products on your cheeks for a balanced finish.",
+    Normal:
+      "You have the perfect canvas! Most makeup textures will work for you, from light tints to full-coverage glam.",
     Sensitive:
-      "Your skin reacts easily to products or the environment. Use calming, hypoallergenic products.",
+      "Gentle is best. We recommend mineral-based makeup and fragrance-free formulas to prevent irritation and redness.",
   };
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -67,52 +75,38 @@ const Quiz = () => {
   };
 
   const calculateSkinType = (answers) => {
-    const score = {
-      Dry: 0,
-      Oily: 0,
-      Combination: 0,
-      Normal: 0,
-      Sensitive: 0,
-    };
+    const score = { Dry: 0, Oily: 0, Combination: 0, Normal: 0, Sensitive: 0 };
 
     answers.forEach((answer) => {
       if (
-        answer.includes("Tight") ||
-        answer.includes("Rough") ||
-        answer === "Rarely" ||
-        answer === "Rough or flaky"
+        answer.includes("Patchy") ||
+        answer.includes("moisture") ||
+        answer.includes("drying")
       )
         score.Dry++;
-
       if (
-        answer.includes("greasy") ||
-        answer === "Often" ||
-        answer === "Almost always" ||
-        answer === "Oily and smooth"
+        answer.includes("shiny") ||
+        answer.includes("matte") ||
+        answer.includes("large")
       )
         score.Oily++;
-
       if (
         answer.includes("T-zone") ||
-        answer === "Sometimes" ||
-        answer === "Combination (varies by area)"
+        answer.includes("balance") ||
+        answer.includes("different zones")
       )
         score.Combination++;
-
       if (
-        answer.includes("balanced") ||
-        answer === "Tans gradually" ||
-        answer === "Not sensitive at all" ||
-        answer === "Soft and even" ||
-        answer === "Rarely burns or tans"
+        answer.includes("Smooth") ||
+        answer.includes("evening out") ||
+        answer.includes("perfectly")
       )
         score.Normal++;
-
       if (
-        answer.includes("irritated") ||
-        answer.includes("sensitive") ||
-        answer === "Burns easily" ||
-        answer === "Red or irritated"
+        answer.includes("Red") ||
+        answer.includes("redness") ||
+        answer.includes("inflamed") ||
+        answer.includes("Fragrance-free")
       )
         score.Sensitive++;
     });
@@ -123,10 +117,9 @@ const Quiz = () => {
 
   const handleNext = () => {
     if (!selectedOption) {
-      alert("Please select an answer!");
+      alert("Please select a beauty preference!");
       return;
     }
-
     const updatedAnswers = [...answers, selectedOption];
     setAnswers(updatedAnswers);
     setSelectedOption("");
@@ -135,13 +128,11 @@ const Quiz = () => {
       const result = calculateSkinType(updatedAnswers);
       setSkinType(result);
     }
-
     setCurrentQuestionIndex((prev) => prev + 1);
   };
 
   const handleBack = () => {
     if (currentQuestionIndex === 0) return;
-
     setSelectedOption("");
     setAnswers((prev) => prev.slice(0, -1));
     setCurrentQuestionIndex((prev) => prev - 1);
@@ -149,26 +140,28 @@ const Quiz = () => {
 
   if (skinType) {
     const description = skinTypeDescriptions[skinType];
-
     return (
-      <div className="bg-gradient-to-b from-[#fad1e3] to-[#ff65aa]/10 min-h-screen flex flex-col items-center justify-center font-kaisei px-4">
-        <img
-          src={SkinmuseLogo2}
-          alt="Skinmuse Logo"
-          className="mb-10 w-72 h-auto"
-        />
-        <div className="bg-white bg-opacity-20 backdrop-blur-lg border border-white/30 rounded-2xl shadow-xl p-10 w-full max-w-xl text-center font-inter">
-          <h2 className="text-3xl font-bold mb-4 text-[#d14b6e]">
-            💫 Your Skin Type is:{" "}
-            <span className="text-yellow-300">{skinType}</span>
+      <div className="bg-[#FCFAFA] min-h-screen flex flex-col items-center justify-center px-4">
+        <div className="max-w-2xl w-full bg-white rounded-[40px] shadow-xl border border-[#F2E8E4] p-12 text-center">
+          <h2 className="text-sm tracking-[0.3em] uppercase text-[#A55166] font-bold mb-2">
+            Analysis Complete
           </h2>
-          <p className="text-lg mb-8 text-[#d14b6e]">{description}</p>
-
+          <h3
+            className="text-4xl font-light text-[#332B2D] mb-6"
+            style={{ fontFamily: "'Julius Sans One', sans-serif" }}
+          >
+            The{" "}
+            <span className="italic text-[#A55166] font-bold">{skinType}</span>{" "}
+            Edit
+          </h3>
+          <p className="text-[#7A6B6E] text-lg mb-10 leading-relaxed font-light">
+            {description}
+          </p>
           <a
             href="/products"
-            className="inline-block px-6 py-3 text-lg bg-[#A55166] text-white rounded-xl font-semibold hover:bg-[#914257] transition"
+            className="inline-block bg-[#332B2D] text-white px-10 py-4 rounded-full font-bold tracking-widest text-xs hover:bg-[#A55166] transition-all shadow-lg"
           >
-            See Recommended Products
+            VIEW PRODUCTS JUST FOR YOU
           </a>
         </div>
       </div>
@@ -178,57 +171,71 @@ const Quiz = () => {
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div className="bg-gradient-to-b h-full from-[#fad1e3] to-[#ff65aa]/10 flex flex-col items-center justify-center font-kaisei min-h-screen">
-      <img
-        src={SkinmuseLogo2}
-        alt="Skinmuse Logo"
-        className="w-72 h-auto -mt-20"
-      />
-
-      <div className="w-[700px] p-8 rounded-2xl shadow-lg bg-opacity-25 backdrop-blur-md border bg-[#A55166]">
-        <h2 className="text-white text-2xl font-bold mb-6 text-center font-inter">
-          {currentQuestion.question}
-        </h2>
-
-        <div className="grid gap-4 mb-6">
-          {currentQuestion.options.map((option) => (
-            <div
-              key={option}
-              onClick={() => handleOptionClick(option)}
-              className={`p-4 rounded-xl shadow-md cursor-pointer text-center font-inter font-bold transition-transform duration-200
-                ${
-                  selectedOption === option
-                    ? "bg-[#A55166] text-white -translate-y-1"
-                    : "bg-white text-[#A55166] hover:bg-[#A55166] hover:text-white hover:-translate-y-1"
-                }
-              `}
-            >
-              {option}
-            </div>
-          ))}
+    <div className="bg-[#FAF8F7] min-h-screen flex flex-col items-center justify-center py-6 px-4">
+      <div className="w-full max-w-3xl bg-white rounded-[40px] shadow-2xl border border-[#F2E8E4] overflow-hidden">
+        {/* Progress Bar */}
+        <div className="w-full h-1 bg-[#F2E8E4]">
+          <div
+            className="h-full bg-[#A55166] transition-all duration-500"
+            style={{
+              width: `${
+                ((currentQuestionIndex + 1) / questions.length) * 100
+              }%`,
+            }}
+          ></div>
         </div>
 
-        <div className="flex justify-between">
-          <button
-            onClick={handleBack}
-            disabled={currentQuestionIndex === 0}
-            className={`px-6 py-2 rounded-xl font-bold font-inter transition
-              ${
-                currentQuestionIndex === 0
-                  ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                  : "bg-[#A55166] text-white hover:bg-[#914257]"
-              }
-            `}
+        <div className="p-10 md:p-16">
+          <p className="text-center text-[#A55166] text-xs font-bold tracking-widest uppercase mb-4">
+            Question {currentQuestionIndex + 1} of {questions.length}
+          </p>
+          <h2
+            className="text-[#332B2D] text-2xl md:text-3xl font-light text-center mb-10 leading-snug"
+            style={{ fontFamily: "'Julius Sans One', sans-serif" }}
           >
-            Back
-          </button>
+            {currentQuestion.question}
+          </h2>
 
-          <button
-            onClick={handleNext}
-            className="bg-[#A55166] text-white px-6 py-2 rounded-xl font-bold font-inter hover:bg-[#914257] transition"
-          >
-            {currentQuestionIndex === questions.length - 1 ? "Finish" : "Next"}
-          </button>
+          <div className="grid gap-3 mb-10">
+            {currentQuestion.options.map((option) => (
+              <button
+                key={option}
+                onClick={() => handleOptionClick(option)}
+                className={`p-5 rounded-2xl border-2 transition-all duration-300 text-left px-8 font-medium
+                  ${
+                    selectedOption === option
+                      ? "border-[#A55166] bg-[#FDF2F0] text-[#A55166]"
+                      : "border-[#F2E8E4] bg-white text-[#7A6B6E] hover:border-[#A55166]/30"
+                  }
+                `}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex justify-between items-center">
+            <button
+              onClick={handleBack}
+              disabled={currentQuestionIndex === 0}
+              className={`text-sm font-bold tracking-widest uppercase transition ${
+                currentQuestionIndex === 0
+                  ? "opacity-0 cursor-default"
+                  : "text-[#A55166] hover:text-[#332B2D]"
+              }`}
+            >
+              Back
+            </button>
+
+            <button
+              onClick={handleNext}
+              className="bg-[#332B2D] text-white px-10 py-4 rounded-full font-bold tracking-widest text-xs hover:bg-[#A55166] transition-all shadow-md"
+            >
+              {currentQuestionIndex === questions.length - 1
+                ? "Get My Edit"
+                : "Continue"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
