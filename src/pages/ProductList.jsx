@@ -21,6 +21,7 @@ const ProductList = () => {
   const token = jwtDecode(sessionStorage.getItem("access-token"));
   const loggedInUserId = token?.id || sessionStorage.getItem("userId");
   const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     (async () => {
       const skinType = searchParams.get("skinType");
@@ -166,11 +167,11 @@ const ProductList = () => {
       console.error("Error updating comment:", error);
     }
   };
+
   const handleSaveProduct = async (isSaved, id = selectedProduct?._id) => {
     try {
       let response;
       if (isSaved) {
-        // Unsave the product
         response = await axiosInstance.delete(`/post/unsave/${id}`);
         if (response.status === 200) {
           setSelectedProduct((prev) =>
@@ -179,10 +180,9 @@ const ProductList = () => {
           setProductData((prev) =>
             prev.map((p) => (p._id === id ? { ...p, isSaved: false } : p))
           );
-          toast.success("Product unsaved successfully!");
+          toast.success("Product removed from Muse list");
         }
       } else {
-        // Save the product
         response = await axiosInstance.post(`/post/save/${id}`);
         if (response.status === 200) {
           setSelectedProduct((prev) =>
@@ -191,25 +191,24 @@ const ProductList = () => {
           setProductData((prev) =>
             prev.map((p) => (p._id === id ? { ...p, isSaved: true } : p))
           );
-          toast.success("Product saved successfully!");
+          toast.success("Added to Muse list");
         }
       }
     } catch (error) {
       console.error("Error saving/unsaving product:", error);
     }
   };
+
   const handleDeleteProduct = async (id) => {
     try {
       if (sessionStorage.getItem("role") !== "admin") {
-        toast.error("You do not have permission to delete this product.");
+        toast.error("Admin access required.");
         return;
       }
       const response = await axiosInstance.delete(`/post/${id}`);
       if (response.status === 200) {
         setProductData((prev) => prev.filter((p) => p._id !== id));
-        if (selectedProduct?._id === id) {
-          closeModal();
-        }
+        if (selectedProduct?._id === id) closeModal();
         toast.success("Product deleted successfully!");
       }
     } catch (error) {
@@ -217,267 +216,257 @@ const ProductList = () => {
       toast.error("Failed to delete product.");
     }
   };
-  const handleDelete = (id) => {
-    setProducts(products.filter((product) => product.id !== id));
-  };
 
-  // console.log("Products:", products);
-  const handleEdit = (id, name) => {
-    setEditingId(id);
-    setEditedName(name);
-  };
-
-  const handleSave = (id) => {
-    setProducts((prev) =>
-      prev.map((product) =>
-        product.id === id ? { ...product, name: editedName } : product
-      )
-    );
-    setEditingId(null);
-    setEditedName("");
-  };
   useEffect(() => {
-    // Simulating fetching products from an API
     const fetchProducts = async () => {
-      // Replace with actual API call
       const response = await axiosInstance.post("/post/saved");
       const data = await response.data;
-      // console.log("Fetched products:", data);
       setProducts(data.savedPosts || []);
     };
     fetchProducts();
   }, []);
 
-  return (
-    <div className="bg-gradient-to-b min-h-screen from-[#fad1e3] to-[#ff65aa]/10 py-10 px-4 font-kaisei">
-      <h1
-        className="text-4xl text-center font-bold text-[#A55166] mb-10"
-        style={{ fontFamily: "'Julius Sans One', sans-serif" }}
-      >
-        🌿 Your Product List
-      </h1>
+  const inputStyles =
+    "w-full p-3 border border-[#F2E8E4] rounded-xl text-black bg-[#FCFAFA] focus:outline-none focus:border-[#A55166] transition-all text-sm";
 
-      {products.length === 0 ? (
-        <p className="text-center text-gray-500 text-lg italic">
-          No products added to the list yet.
+  return (
+    <div className="bg-[#FAF8F7] min-h-screen py-16 px-6 md:px-12">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto mb-16 text-center">
+        <h1
+          className="text-4xl md:text-5xl text-[#332B2D] font-light mb-4"
+          style={{ fontFamily: "'Julius Sans One', sans-serif" }}
+        >
+          The <span className="italic font-bold text-[#A55166]">Muse</span>{" "}
+          Collection
+        </h1>
+        <p className="text-[#7A6B6E] tracking-[0.2em] uppercase text-xs font-bold">
+          Your Saved Essentials
         </p>
-      ) : (
-        <div className="w-[90%] max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, idx) => (
-            <div
-              key={idx}
-              onClick={() => openModal(product)}
-              className="bg-white rounded-2xl relative shadow-lg p-4 flex flex-col cursor-pointer hover:shadow-xl transition"
-            >
-              <img
-                src={product.image}
-                alt=""
-                className="rounded-xl object-cover w-full h-44 mb-4"
-              />
+      </div>
+
+      {/* Grid */}
+      <div className="max-w-7xl mx-auto">
+        {products.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-[40px] border border-dashed border-[#F2E8E4]">
+            <p className="text-[#7A6B6E] italic font-light">
+              Your collection is currently empty.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            {products.map((product, idx) => (
               <div
-                className={`min-h-[2rem] mb-2 text-center font-inter font-semibold text-lg ${
-                  product.title ? "text-[#A55166]" : "text-gray-400"
-                }`}
+                key={idx}
+                onClick={() => openModal(product)}
+                className="group bg-white rounded-[32px] overflow-hidden shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] border border-[#F2E8E4] cursor-pointer hover:-translate-y-2 transition-all duration-500"
               >
-                {product.title || "Title"}
+                <div className="relative h-64 overflow-hidden">
+                  <img
+                    src={product.image}
+                    alt=""
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveProduct(true, product._id);
+                      }}
+                      className="p-3 bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:bg-red-50 transition-colors"
+                    >
+                      <BiHeart size={20} className="text-red-500" />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <h3 className="text-[#332B2D] font-bold text-lg mb-2 truncate">
+                    {product.title || "Untitled Product"}
+                  </h3>
+                  <p className="text-[#7A6B6E] text-sm line-clamp-2 font-light leading-relaxed">
+                    {product.description || "No description available."}
+                  </p>
+                </div>
               </div>
-              <div>
-                <span
-                  onClick={() => {
-                    handleSaveProduct(true, product._id);
-                  }}
-                  className="p-4 rounded-full bg-red-500 absolute top-10 left-10"
-                >
-                  <BiHeart size={30} fill="white" />
-                </span>
-              </div>
-              <div
-                className={`min-h-[3rem] line-clamp-3 text-center font-inter text-sm ${
-                  product.description ? "text-[#A55166]/80" : "text-gray-400"
-                }`}
-              >
-                {product.description || "Description"}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Product Detail Modal */}
       {selectedProduct && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-10">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="absolute inset-0 bg-[#332B2D]/60 backdrop-blur-sm"
             onClick={closeModal}
           />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 overflow-auto">
-            <div className="bg-white rounded-2xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-auto flex flex-col md:flex-row  relative">
-              <button
-                onClick={closeModal}
-                className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold z-10"
-                aria-label="Close modal"
-              >
-                &times;
-              </button>
 
-              {/* Image Section (List icon removed from here) */}
-              <div className="md:w-1/2 relative w-full flex items-center justify-center bg-[#fad1e3] p-4">
+          <div className="bg-white rounded-[40px] shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative z-10 animate-in fade-in zoom-in duration-300">
+            <button
+              onClick={closeModal}
+              className="absolute top-6 right-6 text-[#332B2D] hover:rotate-90 transition-transform duration-300 z-20"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Left: Product Image */}
+            <div className="md:w-1/2 bg-[#FCFAFA] flex items-center justify-center p-8 border-r border-[#F2E8E4]">
+              <div className="relative w-full h-full min-h-[300px] flex items-center justify-center">
                 <img
                   src={selectedProduct.image}
                   alt=""
-                  className="rounded-xl object-contain max-h-[80vh] w-full"
+                  className="rounded-2xl object-contain max-h-[60vh] w-full shadow-lg"
                 />
-                {selectedProduct.isSaved ? (
-                  <span
-                    onClick={() => {
-                      handleSaveProduct(true);
-                    }}
-                    className="p-4 rounded-full bg-red-500 absolute top-10 left-10"
-                  >
-                    <BiHeart size={30} fill="white" />
-                  </span>
-                ) : (
-                  <span
-                    onClick={() => {
-                      handleSaveProduct(false);
-                    }}
-                    className="p-4 rounded-full bg-white absolute top-10 left-10"
-                  >
-                    <BiHeart size={30} fill="red" />
-                  </span>
-                )}
-                {sessionStorage.getItem("role") === "admin" && (
-                  <div className="absolute bottom-10 left-10 flex gap-2">
-                    <button
-                      onClick={() =>
-                        navigate(`/create-post/${selectedProduct._id}`)
-                      }
-                      className="text-sm text-[#A55166] hover:text-[#914257] font-semibold"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProduct(selectedProduct._id)}
-                      className="text-sm text-red-500 hover:text-red-700 font-semibold"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
+
+                <button
+                  onClick={() => handleSaveProduct(selectedProduct.isSaved)}
+                  className={`absolute top-0 left-0 p-4 rounded-full shadow-xl transition-all ${
+                    selectedProduct.isSaved
+                      ? "bg-red-500 text-white"
+                      : "bg-white text-red-500"
+                  }`}
+                >
+                  <BiHeart size={28} />
+                </button>
               </div>
+            </div>
 
-              {/* Comments Section with List Icon */}
-
-              <div className="md:w-1/2 w-full flex flex-col p-6">
-                {selectedProduct?.description && (
-                  <>
-                    {" "}
-                    <h2
-                      className="text-2xl font-semibold text-[#A55166]"
-                      style={{ fontFamily: "'Julius Sans One', sans-serif" }}
-                    >
-                      Description
-                    </h2>
-                    <p>{selectedProduct?.description}</p>
-                  </>
-                )}
-
-                <div className="flex justify-between items-center mb-4">
+            {/* Right: Info & Comments */}
+            <div className="md:w-1/2 flex flex-col h-full bg-white">
+              <div className="p-8 md:p-12 overflow-y-auto flex-1">
+                <div className="mb-10">
                   <h2
-                    className="text-2xl font-semibold text-[#A55166]"
+                    className="text-3xl text-[#332B2D] font-light mb-4"
                     style={{ fontFamily: "'Julius Sans One', sans-serif" }}
                   >
-                    Comments
+                    {selectedProduct.title}
                   </h2>
-                  <button
-                    onClick={() => navigate("/product-list")}
-                    className="text-[#A55166] hover:text-[#914257]"
-                    title="View My Product List"
-                  >
-                    <FaListUl className="text-2xl" />
-                  </button>
+                  <p className="text-[#7A6B6E] text-sm leading-relaxed font-light">
+                    {selectedProduct.description}
+                  </p>
                 </div>
-                <div className="flex-1 overflow-y-auto mb-4 space-y-3 border border-gray-300 rounded-md p-4">
-                  {comments.length === 0 && (
-                    <p className="text-gray-500 italic">No comments yet.</p>
-                  )}
-                  {comments.map(({ id, author, userId, text }) => (
-                    <div
-                      key={id}
-                      className={`p-2 rounded relative ${
-                        author === "You"
-                          ? "bg-[#ff65aa]/20 self-end"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      <p className="text-sm font-semibold text-[#A55166]">
-                        {author}
-                      </p>
 
-                      {editingCommentId === id ? (
-                        <>
-                          <textarea
-                            rows={2}
-                            value={editingText}
-                            onChange={(e) => setEditingText(e.target.value)}
-                            className="w-full border border-gray-300 rounded-md p-1 resize-none focus:outline-none focus:ring-2 focus:ring-[#A55166]"
-                          />
-                          <div className="mt-1 flex gap-2 justify-end">
-                            <button
-                              onClick={() => saveEditing(id)}
-                              className="bg-[#A55166] text-white px-3 py-1 rounded font-semibold hover:bg-[#914257] transition"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={cancelEditing}
-                              className="bg-gray-300 text-gray-700 px-3 py-1 rounded font-semibold hover:bg-gray-400 transition"
-                            >
-                              Cancel
-                            </button>
+                <div className="border-t border-[#F2E8E4] pt-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <h4 className="text-[#332B2D] text-xs font-bold tracking-widest uppercase">
+                      Discussion ({comments.length})
+                    </h4>
+                  </div>
+
+                  <div className="space-y-4 mb-8">
+                    {comments.length === 0 ? (
+                      <p className="text-[#7A6B6E] text-sm italic">
+                        Be the first to leave a comment...
+                      </p>
+                    ) : (
+                      comments.map(({ id, author, userId, text }) => (
+                        <div
+                          key={id}
+                          className={`group p-4 rounded-2xl transition-colors ${
+                            author === "You"
+                              ? "bg-[#FAF8F7]"
+                              : "bg-white border border-[#F2E8E4]"
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-[#A55166]">
+                              {author}
+                            </span>
+                            {userId === loggedInUserId && (
+                              <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => startEditing(id, text)}
+                                  className="text-[10px] uppercase font-bold text-gray-400 hover:text-[#332B2D]"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => deleteComment(id)}
+                                  className="text-[10px] uppercase font-bold text-gray-400 hover:text-red-500"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-gray-700 break-words">{text}</p>
-                          {userId === loggedInUserId && (
-                            <div className="absolute top-2 right-2 flex gap-2">
-                              <button
-                                onClick={() => startEditing(id, text)}
-                                className="text-sm text-[#A55166] hover:text-[#914257] font-semibold"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => deleteComment(id)}
-                                className="text-sm text-red-500 hover:text-red-700 font-semibold"
-                              >
-                                Delete
-                              </button>
+
+                          {editingCommentId === id ? (
+                            <div className="mt-2">
+                              <textarea
+                                value={editingText}
+                                onChange={(e) => setEditingText(e.target.value)}
+                                className={inputStyles}
+                                rows={2}
+                              />
+                              <div className="flex gap-2 mt-2 justify-end">
+                                <button
+                                  onClick={() => saveEditing(id)}
+                                  className="text-[10px] font-bold text-[#A55166] uppercase"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={cancelEditing}
+                                  className="text-[10px] font-bold text-gray-400 uppercase"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
                             </div>
+                          ) : (
+                            <p className="text-[#332B2D] text-sm font-light leading-relaxed">
+                              {text}
+                            </p>
                           )}
-                        </>
-                      )}
-                    </div>
-                  ))}
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+              </div>
+
+              {/* Sticky Comment Input */}
+              <div className="p-6 border-t border-[#F2E8E4] bg-[#FCFAFA]">
+                <div className="flex gap-3 items-center">
                   <textarea
-                    rows={2}
+                    rows={1}
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Write your comment..."
-                    className="flex-1 border border-gray-300 rounded-md p-2 resize-none focus:outline-none focus:ring-2 focus:ring-[#A55166]"
+                    placeholder="Write a comment..."
+                    className={`${inputStyles} resize-none py-4 px-6 rounded-[20px]`}
                   />
                   <button
                     onClick={handleAddComment}
-                    className="bg-[#A55166] text-white px-4 py-2 rounded-md font-semibold hover:bg-[#914257] transition"
+                    className="bg-[#332B2D] text-white p-4 rounded-full hover:bg-[#A55166] transition-colors shadow-lg active:scale-90"
                   >
-                    Send
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
