@@ -1,4 +1,5 @@
 import { useState } from "react";
+import MakeupMuseLogo from "../assets/images/makeupmuse.jpg"; // Logo only used in results
 
 const Quiz = () => {
   const questions = [
@@ -138,10 +139,16 @@ const Quiz = () => {
     setCurrentQuestionIndex((prev) => prev - 1);
   };
 
+  // Result View (With Logo)
   if (skinType) {
     const description = skinTypeDescriptions[skinType];
     return (
       <div className="bg-[#FCFAFA] min-h-screen flex flex-col items-center justify-center px-4">
+        <img
+          src={MakeupMuseLogo}
+          alt="MakeupMuse Logo"
+          className="h-20 mb-10 object-contain"
+        />
         <div className="max-w-2xl w-full bg-white rounded-[40px] shadow-xl border border-[#F2E8E4] p-12 text-center">
           <h2 className="text-sm tracking-[0.3em] uppercase text-[#A55166] font-bold mb-2">
             Analysis Complete
@@ -157,22 +164,31 @@ const Quiz = () => {
           <p className="text-[#7A6B6E] text-lg mb-10 leading-relaxed font-light">
             {description}
           </p>
-          <a
-            href="/products"
-            className="inline-block bg-[#332B2D] text-white px-10 py-4 rounded-full font-bold tracking-widest text-xs hover:bg-[#A55166] transition-all shadow-lg"
-          >
-            VIEW PRODUCTS JUST FOR YOU
-          </a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/products"
+              className="bg-[#332B2D] text-white px-10 py-4 rounded-full font-bold tracking-widest text-xs hover:bg-[#A55166] transition-all shadow-lg text-center"
+            >
+              VIEW PRODUCTS FOR YOU
+            </a>
+            <button
+              onClick={() => window.location.reload()}
+              className="border border-[#F2E8E4] text-[#7A6B6E] px-10 py-4 rounded-full font-bold tracking-widest text-xs hover:bg-[#FDF2F0] transition-all"
+            >
+              RETAKE QUIZ
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Quiz View (No Logo)
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
     <div className="bg-[#FAF8F7] min-h-screen flex flex-col items-center justify-center py-6 px-4">
-      <div className="w-full max-w-3xl bg-white rounded-[40px] shadow-2xl border border-[#F2E8E4] overflow-hidden">
+      <div className="w-full max-w-3xl bg-white rounded-[48px] shadow-2xl border border-[#F2E8E4] overflow-hidden">
         {/* Progress Bar */}
         <div className="w-full h-1 bg-[#F2E8E4]">
           <div
@@ -185,23 +201,23 @@ const Quiz = () => {
           ></div>
         </div>
 
-        <div className="p-10 md:p-16">
+        <div className="p-10 md:p-20">
           <p className="text-center text-[#A55166] text-xs font-bold tracking-widest uppercase mb-4">
             Question {currentQuestionIndex + 1} of {questions.length}
           </p>
           <h2
-            className="text-[#332B2D] text-2xl md:text-3xl font-light text-center mb-10 leading-snug"
+            className="text-[#332B2D] text-2xl md:text-4xl font-light text-center mb-12 leading-tight"
             style={{ fontFamily: "'Julius Sans One', sans-serif" }}
           >
             {currentQuestion.question}
           </h2>
 
-          <div className="grid gap-3 mb-10">
+          <div className="grid gap-3 mb-12">
             {currentQuestion.options.map((option) => (
               <button
                 key={option}
                 onClick={() => handleOptionClick(option)}
-                className={`p-5 rounded-2xl border-2 transition-all duration-300 text-left px-8 font-medium
+                className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left px-8 font-medium
                   ${
                     selectedOption === option
                       ? "border-[#A55166] bg-[#FDF2F0] text-[#A55166]"
@@ -218,22 +234,22 @@ const Quiz = () => {
             <button
               onClick={handleBack}
               disabled={currentQuestionIndex === 0}
-              className={`text-sm font-bold tracking-widest uppercase transition ${
+              className={`text-sm font-bold tracking-[0.2em] uppercase transition ${
                 currentQuestionIndex === 0
                   ? "opacity-0 cursor-default"
                   : "text-[#A55166] hover:text-[#332B2D]"
               }`}
             >
-              Back
+              ← Back
             </button>
 
             <button
               onClick={handleNext}
-              className="bg-[#332B2D] text-white px-10 py-4 rounded-full font-bold tracking-widest text-xs hover:bg-[#A55166] transition-all shadow-md"
+              className="bg-[#332B2D] text-white px-12 py-5 rounded-full font-bold tracking-widest text-xs hover:bg-[#A55166] transition-all shadow-md active:scale-95"
             >
               {currentQuestionIndex === questions.length - 1
                 ? "Get My Edit"
-                : "Continue"}
+                : "Next Step"}
             </button>
           </div>
         </div>

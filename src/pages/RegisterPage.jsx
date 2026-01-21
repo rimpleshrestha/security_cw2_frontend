@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import SkinmuseLogo2 from "../assets/images/skinmuselogo2.png";
+import MakeupMuseLogo from "../assets/images/makeupmuse.jpg"; // Updated logo import
 import toast from "react-hot-toast";
 import axios from "axios";
 
@@ -9,94 +9,129 @@ const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+
   const onSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
-    const response = await axios.post("http://localhost:3000/api/signup", {
-      email,
-      password,
-      confirm_password: confirmPassword,
-    });
-    if ([200, 201].includes(response.status)) {
-      toast.success("Registered  in successfully!");
-      navigate("/signup");
-    } else {
-      toast.success("Registered  in Failed!");
+
+    try {
+      const response = await axios.post("http://localhost:3000/api/signup", {
+        email,
+        password,
+        confirm_password: confirmPassword,
+      });
+
+      if ([200, 201].includes(response.status)) {
+        toast.success("Account created successfully!");
+        navigate("/signup");
+      } else {
+        toast.error("Registration failed. Please try again.");
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "An error occurred during registration"
+      );
     }
-    // Add registration logic here
   };
 
-  return (
-    <div className=" bg-gradient-to-b h-full w-full from-[#fad1e3] to-[#ff65aa]/10 flex flex-col items-center justify-center font-kaisei">
-      {/* Bigger logo above form */}
-      <img
-        src={SkinmuseLogo2}
-        alt="Skinmuse Logo"
-        className="mb-8 w-72 h-auto"
-      />
+  const inputStyles =
+    "w-full p-4 border border-[#F2E8E4] rounded-2xl text-black bg-[#FCFAFA] focus:outline-none focus:border-[#A55166] focus:ring-1 focus:ring-[#A55166] transition-all duration-300 placeholder:text-gray-300";
+  const labelStyles =
+    "block mb-2 text-[#332B2D] text-xs font-bold tracking-widest uppercase ml-1";
 
-      <form
-        onSubmit={onSubmit}
-        className="min-w-[600px] max-md:min-w-[80%] p-8 rounded-2xl shadow-lg bg-opacity-25 backdrop-blur-md border bg-[#A55166]"
-      >
-        <div className="mb-4">
-          <label className="block mb-1 text-[#A55166] font-bold font-inter">
-            Email:
-          </label>
-          <input
-            type="email"
-            placeholder="toffee@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 shadow-md rounded-xl text-black bg-white focus:outline-none"
+  return (
+    <div className="bg-[#FAF8F7] min-h-screen w-full flex flex-col items-center justify-center px-6 py-12">
+      {/* Decorative Background Blur */}
+      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#FAD1E3] opacity-20 blur-[100px] pointer-events-none"></div>
+
+      {/* Main Container */}
+      <div className="w-full max-w-md relative z-10">
+        {/* Branding */}
+        <div className="flex flex-col items-center mb-10">
+          <img
+            src={MakeupMuseLogo}
+            alt="MakeupMuse Logo"
+            className="w-48 h-auto object-contain mb-6"
           />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1 text-[#A55166] font-bold font-inter">
-            Password:
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 shadow-md rounded-xl text-black bg-white focus:outline-none"
-          />
-        </div>
-        <div className="mb-6">
-          <label className="block mb-1 text-[#A55166] font-bold font-inter">
-            Confirm Password:
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full p-3 shadow-md text-black rounded-xl bg-white focus:outline-none"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-[#A55166] text-white py-3 rounded-xl font-bold font-inter hover:bg-[#914257] transition"
-        >
-          Register
-        </button>
-        <p
-          className="text-black font-bold text-center mt-4"
-          style={{ fontFamily: "'Julius Sans One', sans-serif" }}
-        >
-          Already have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-black font-bold no-underline hover:no-underline"
+          <h2
+            className="text-2xl text-[#332B2D] font-light"
+            style={{ fontFamily: "'Julius Sans One', sans-serif" }}
           >
-            Sign in
-          </Link>
-        </p>
-      </form>
+            Create Your{" "}
+            <span className="italic font-bold text-[#A55166]">Artistry</span>{" "}
+            Profile
+          </h2>
+        </div>
+
+        {/* Form Card */}
+        <form
+          onSubmit={onSubmit}
+          className="bg-white p-10 rounded-[40px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] border border-[#F2E8E4]"
+        >
+          <div className="space-y-6">
+            <div>
+              <label className={labelStyles}>Email Address</label>
+              <input
+                type="email"
+                placeholder="muse@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputStyles}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={labelStyles}>Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputStyles}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={labelStyles}>Confirm Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={inputStyles}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-[#332B2D] text-white py-4 rounded-2xl font-bold tracking-widest text-xs uppercase hover:bg-[#A55166] transition-all duration-500 shadow-lg mt-4 active:scale-95"
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-[#F2E8E4] text-center">
+            <p
+              className="text-[#7A6B6E] text-sm font-medium"
+              style={{ fontFamily: "'Julius Sans One', sans-serif" }}
+            >
+              Already a member?{" "}
+              <Link
+                to="/signup"
+                className="text-[#A55166] font-bold hover:underline underline-offset-4 transition-all"
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
