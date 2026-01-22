@@ -1,19 +1,30 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import MakeupMuseLogo from "../assets/images/makeupmuse.jpg"; // Updated logo import
+import MakeupMuseLogo from "../assets/images/makeupmuse.jpg";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // New state for inline messages
+  const [errors, setErrors] = useState({});
+  const [successMsg, setSuccessMsg] = useState("");
+
   const navigate = useNavigate();
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
+    setSuccessMsg("");
+
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      setErrors({ confirmPassword: "Passwords do not match" });
       return;
     }
 
@@ -25,15 +36,19 @@ const RegisterPage = () => {
       });
 
       if ([200, 201].includes(response.status)) {
+        setSuccessMsg("Account created successfully!");
         toast.success("Account created successfully!");
         navigate("/signup");
       } else {
+        setErrors({ general: "Registration failed. Please try again." });
         toast.error("Registration failed. Please try again.");
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "An error occurred during registration"
-      );
+      const msg =
+        error.response?.data?.message ||
+        "An error occurred during registration";
+      setErrors({ general: msg });
+      toast.error(msg);
     }
   };
 
@@ -41,6 +56,7 @@ const RegisterPage = () => {
     "w-full p-4 border border-[#F2E8E4] rounded-2xl text-black bg-[#FCFAFA] focus:outline-none focus:border-[#A55166] focus:ring-1 focus:ring-[#A55166] transition-all duration-300 placeholder:text-gray-300";
   const labelStyles =
     "block mb-2 text-[#332B2D] text-xs font-bold tracking-widest uppercase ml-1";
+  const errorStyles = "text-red-500 text-xs mt-1 ml-1";
 
   return (
     <div className="bg-[#FAF8F7] min-h-screen w-full flex flex-col items-center justify-center px-6 py-12">
@@ -82,31 +98,59 @@ const RegisterPage = () => {
                 className={inputStyles}
                 required
               />
+              {errors.email && <p className={errorStyles}>{errors.email}</p>}
             </div>
 
-            <div>
+            {/* Password field */}
+            <div className="relative">
               <label className={labelStyles}>Password</label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputStyles}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-[38px] text-gray-500"
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+              {errors.password && (
+                <p className={errorStyles}>{errors.password}</p>
+              )}
             </div>
 
-            <div>
+            {/* Confirm Password field */}
+            <div className="relative">
               <label className={labelStyles}>Confirm Password</label>
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={inputStyles}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-4 top-[38px] text-gray-500"
+              >
+                {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+              {errors.confirmPassword && (
+                <p className={errorStyles}>{errors.confirmPassword}</p>
+              )}
             </div>
+
+            {errors.general && <p className={errorStyles}>{errors.general}</p>}
+            {successMsg && (
+              <p className="text-green-600 text-xs mt-1 ml-1">{successMsg}</p>
+            )}
 
             <button
               type="submit"
