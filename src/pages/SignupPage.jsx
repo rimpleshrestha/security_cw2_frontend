@@ -1,84 +1,23 @@
-import axios from "axios";
 import { useState } from "react";
-import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import MakeupMuseLogo from "../assets/images/makeupmuse.jpg";
+import toast from "react-hot-toast";
+import axios from "axios";
+import ReCAPTCHA from "react-google-recaptcha";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState("");
   const [mfaRequired, setMfaRequired] = useState(false);
-  const [otpSentTime, setOtpSentTime] = useState(null); // for resend cooldown
+  const [otpSentTime, setOtpSentTime] = useState(null);
+  const [captchaValue, setCaptchaValue] = useState(null);
   const navigate = useNavigate();
 
-  // -------------------- Step 1: Login --------------------
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await axios.post("http://localhost:3000/api/login", {
-        email,
-        password,
-      });
-
-      if (response.data.mfaRequired) {
-        toast.success("OTP sent to your email!");
-        setMfaRequired(true);
-        setOtpSentTime(Date.now());
-      } else {
-        // fallback if MFA not enabled
-        finalizeLogin(response.data);
-      }
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Login failed due to server error",
-      );
-    }
-  };
-
-  // -------------------- Step 2: Verify OTP --------------------
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/verify-otp",
-        { email, otp },
-      );
-
-      finalizeLogin(response.data);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "OTP verification failed");
-    }
-  };
-
-  // -------------------- Resend OTP --------------------
-  const handleResendOtp = async () => {
-    try {
-      const response = await axios.post("http://localhost:3000/api/login", {
-        email,
-        password,
-      });
-      toast.success("OTP resent to your email!");
-      setOtpSentTime(Date.now());
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to resend OTP");
-    }
-  };
-
-  // -------------------- Finalize Login --------------------
-  const finalizeLogin = (data) => {
-    toast.success("Logged in successfully!");
-
-    sessionStorage.setItem("access-token", data.accessToken);
-    sessionStorage.setItem("email", data.email);
-    sessionStorage.setItem("role", data.userRole);
-    sessionStorage.setItem("name", data.name);
-    sessionStorage.setItem("profilePic", data.avatar);
-
-    navigate("/dashboard");
-  };
+  const BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
   const inputStyles =
     "w-full p-4 border border-[#F2E8E4] rounded-2xl text-black bg-[#FCFAFA] focus:outline-none focus:border-[#A55166] focus:ring-1 focus:ring-[#A55166] transition-all duration-300 placeholder:text-gray-300";
@@ -88,6 +27,74 @@ const LoginPage = () => {
   const otpCooldown = otpSentTime
     ? Math.max(0, 30 - Math.floor((Date.now() - otpSentTime) / 1000))
     : 0;
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    // Include captcha only if we have it
+    const payload = { email, password, captchaValue };
+
+    try {
+      const response = await axios.post(`${BACKEND_URL}/api/login`, payload);
+
+      // IMPORTANT: Reset captcha state after any attempt to prevent stale token reuse
+      setCaptchaValue(null);
+
+      if (response.data.mfaRequired) {
+        toast.success("OTP sent to your email!");
+        setMfaRequired(true);
+        setOtpSentTime(Date.now());
+      } else {
+        finalizeLogin(response.data);
+      }
+    } catch (error) {
+      // Also reset on error so user can solve a fresh captcha if they try again
+      setCaptchaValue(null);
+      toast.error(
+        error.response?.data?.message || "Login failed due to server error",
+      );
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!otp) {
+      toast.error("Please enter the OTP");
+      return;
+    }
+    try {
+      const response = await axios.post(`${BACKEND_URL}/api/verify-otp`, {
+        email,
+        otp,
+      });
+      finalizeLogin(response.data);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "OTP verification failed");
+    }
+  };
+
+  const handleResendOtp = async () => {
+    // FIX: Do NOT send the stale captchaValue on resend
+    const payload = { email, password };
+
+    try {
+      await axios.post(`${BACKEND_URL}/api/login`, payload);
+      toast.success("OTP resent to your email!");
+      setOtpSentTime(Date.now());
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to resend OTP");
+    }
+  };
+
+  const finalizeLogin = (data) => {
+    toast.success("Logged in successfully!");
+    sessionStorage.setItem("access-token", data.accessToken);
+    sessionStorage.setItem("email", data.email);
+    sessionStorage.setItem("role", data.userRole);
+    sessionStorage.setItem("name", data.name);
+    sessionStorage.setItem("profilePic", data.avatar);
+    navigate("/dashboard");
+  };
 
   return (
     <div className="bg-[#FAF8F7] min-h-screen w-full flex flex-col items-center justify-center px-6 py-12">
@@ -118,27 +125,40 @@ const LoginPage = () => {
               <label className={labelStyles}>Email Address</label>
               <input
                 type="email"
-                name="email"
-                placeholder="toffee@example.com"
+                placeholder="muse@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={inputStyles}
                 required
-                disabled={mfaRequired} // ✅ cannot change email after OTP sent
+                disabled={mfaRequired}
               />
             </div>
 
             {!mfaRequired && (
-              <div>
+              <div className="relative">
                 <label className={labelStyles}>Password</label>
                 <input
-                  type="password"
-                  name="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={inputStyles}
                   required
+                />
+                <span
+                  className="absolute right-4 top-10 cursor-pointer text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+            )}
+
+            {!mfaRequired && (
+              <div className="flex justify-center">
+                <ReCAPTCHA
+                  sitekey="6LcT3lMsAAAAAO40bwsQCSrT6yHorzzFzLo9B8az"
+                  onChange={(value) => setCaptchaValue(value)}
                 />
               </div>
             )}
@@ -148,7 +168,6 @@ const LoginPage = () => {
                 <label className={labelStyles}>Enter OTP</label>
                 <input
                   type="text"
-                  name="otp"
                   placeholder="Enter OTP"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
