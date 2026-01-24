@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify";
 import MakeupMuseLogo from "../assets/images/makeupmuse.jpg";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -13,6 +14,17 @@ const RegisterPage = () => {
   const [passwordStrength, setPasswordStrength] = useState("");
   const navigate = useNavigate();
 
+  // STRENGHTENED SANITIZE: Keeps all your existing logic but adds strict bracket blocking
+  const sanitize = (value) => {
+    if (typeof value !== "string") return "";
+
+    // 1. Regex to strip < and > immediately so tags can't even be formed
+    const noBrackets = value.replace(/[<>]/g, "");
+
+    // 2. DOMPurify as the second layer with NO tags allowed
+    return DOMPurify.sanitize(noBrackets, { ALLOW_TAGS: [] });
+  };
+
   const checkPasswordStrength = (pwd) => {
     if (!pwd) return "";
     const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -24,26 +36,35 @@ const RegisterPage = () => {
 
   const handlePasswordChange = (e) => {
     const value = e.target.value;
-    setPassword(value);
+    // Keeping your logic for password consistency
+    setPassword(sanitize(value));
     setPasswordStrength(checkPasswordStrength(value));
   };
 
   const handleConfirmPasswordChange = (e) => {
-    setConfirmPassword(e.target.value);
+    setConfirmPassword(sanitize(e.target.value));
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
+
+    const payload = {
+      email: sanitize(email),
+      password: password,
+      confirm_password: confirmPassword,
+    };
+
     try {
-      const response = await axios.post("http://localhost:3000/api/signup", {
-        email,
-        password,
-        confirm_password: confirmPassword,
-      });
+      const response = await axios.post(
+        "http://localhost:3000/api/signup",
+        payload,
+      );
+
       if ([200, 201].includes(response.status)) {
         toast.success("Account created successfully!");
         navigate("/signup");
@@ -63,7 +84,6 @@ const RegisterPage = () => {
   const labelStyles =
     "block mb-2 text-[#332B2D] text-xs font-bold tracking-widest uppercase ml-1";
 
-  // Improved Eye Icon Component
   const EyeIcon = ({ visible }) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -122,16 +142,15 @@ const RegisterPage = () => {
             <div>
               <label className={labelStyles}>Email Address</label>
               <input
-                type="email"
+                type="text"
                 placeholder="muse@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(sanitize(e.target.value))}
                 className={inputStyles}
                 required
               />
             </div>
 
-            {/* Password Field */}
             <div>
               <label className={labelStyles}>Password</label>
               <div className="relative flex items-center">
@@ -147,7 +166,6 @@ const RegisterPage = () => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 p-1 focus:outline-none hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   <EyeIcon visible={showPassword} />
                 </button>
@@ -168,7 +186,6 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            {/* Confirm Password Field */}
             <div>
               <label className={labelStyles}>Confirm Password</label>
               <div className="relative flex items-center">
@@ -184,9 +201,6 @@ const RegisterPage = () => {
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-4 p-1 focus:outline-none hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
                 >
                   <EyeIcon visible={showConfirmPassword} />
                 </button>
@@ -209,7 +223,7 @@ const RegisterPage = () => {
               Already a member?{" "}
               <Link
                 to="/signup"
-                className="text-[#A55166] font-bold hover:underline underline-offset-4 transition-all"
+                className="text-[#A55166] font-bold hover:underline"
               >
                 Sign in
               </Link>

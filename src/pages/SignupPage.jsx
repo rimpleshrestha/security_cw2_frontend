@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify"; // <<<<< Added for XSS protection
 import MakeupMuseLogo from "../assets/images/makeupmuse.jpg";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -28,16 +29,21 @@ const LoginPage = () => {
     ? Math.max(0, 30 - Math.floor((Date.now() - otpSentTime) / 1000))
     : 0;
 
+  // Helper to sanitize user input
+  const sanitize = (value) => DOMPurify.sanitize(value);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Include captcha only if we have it
-    const payload = { email, password, captchaValue };
+    // Sanitize inputs before sending
+    const payload = {
+      email: sanitize(email),
+      password: sanitize(password),
+      captchaValue: sanitize(captchaValue),
+    };
 
     try {
       const response = await axios.post(`${BACKEND_URL}/api/login`, payload);
-
-      // IMPORTANT: Reset captcha state after any attempt to prevent stale token reuse
       setCaptchaValue(null);
 
       if (response.data.mfaRequired) {
@@ -48,7 +54,6 @@ const LoginPage = () => {
         finalizeLogin(response.data);
       }
     } catch (error) {
-      // Also reset on error so user can solve a fresh captcha if they try again
       setCaptchaValue(null);
       toast.error(
         error.response?.data?.message || "Login failed due to server error",
@@ -62,10 +67,11 @@ const LoginPage = () => {
       toast.error("Please enter the OTP");
       return;
     }
+
     try {
       const response = await axios.post(`${BACKEND_URL}/api/verify-otp`, {
-        email,
-        otp,
+        email: sanitize(email),
+        otp: sanitize(otp),
       });
       finalizeLogin(response.data);
     } catch (error) {
@@ -74,8 +80,7 @@ const LoginPage = () => {
   };
 
   const handleResendOtp = async () => {
-    // FIX: Do NOT send the stale captchaValue on resend
-    const payload = { email, password };
+    const payload = { email: sanitize(email), password: sanitize(password) };
 
     try {
       await axios.post(`${BACKEND_URL}/api/login`, payload);
@@ -127,7 +132,7 @@ const LoginPage = () => {
                 type="email"
                 placeholder="muse@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(sanitize(e.target.value))}
                 className={inputStyles}
                 required
                 disabled={mfaRequired}
@@ -141,7 +146,7 @@ const LoginPage = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(sanitize(e.target.value))}
                   className={inputStyles}
                   required
                 />
@@ -158,7 +163,7 @@ const LoginPage = () => {
               <div className="flex justify-center">
                 <ReCAPTCHA
                   sitekey="6LcT3lMsAAAAAO40bwsQCSrT6yHorzzFzLo9B8az"
-                  onChange={(value) => setCaptchaValue(value)}
+                  onChange={(value) => setCaptchaValue(sanitize(value))}
                 />
               </div>
             )}
@@ -170,7 +175,7 @@ const LoginPage = () => {
                   type="text"
                   placeholder="Enter OTP"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => setOtp(sanitize(e.target.value))}
                   className={inputStyles}
                   required
                 />
