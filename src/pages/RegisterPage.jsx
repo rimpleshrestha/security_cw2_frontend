@@ -14,14 +14,9 @@ const RegisterPage = () => {
   const [passwordStrength, setPasswordStrength] = useState("");
   const navigate = useNavigate();
 
-  // STRENGHTENED SANITIZE: Keeps all your existing logic but adds strict bracket blocking
   const sanitize = (value) => {
     if (typeof value !== "string") return "";
-
-    // 1. Regex to strip < and > immediately so tags can't even be formed
     const noBrackets = value.replace(/[<>]/g, "");
-
-    // 2. DOMPurify as the second layer with NO tags allowed
     return DOMPurify.sanitize(noBrackets, { ALLOW_TAGS: [] });
   };
 
@@ -36,7 +31,6 @@ const RegisterPage = () => {
 
   const handlePasswordChange = (e) => {
     const value = e.target.value;
-    // Keeping your logic for password consistency
     setPassword(sanitize(value));
     setPasswordStrength(checkPasswordStrength(value));
   };
@@ -47,7 +41,6 @@ const RegisterPage = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -68,14 +61,9 @@ const RegisterPage = () => {
       if ([200, 201].includes(response.status)) {
         toast.success("Account created successfully!");
         navigate("/signup");
-      } else {
-        toast.error("Registration failed. Please try again.");
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred during registration",
-      );
+      toast.error(error.response?.data?.message || "Registration failed");
     }
   };
 
@@ -95,7 +83,7 @@ const RegisterPage = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-gray-400 hover:text-[#A55166] transition-colors"
+      className="text-gray-400"
     >
       {visible ? (
         <>
@@ -115,19 +103,10 @@ const RegisterPage = () => {
 
   return (
     <div className="bg-[#FAF8F7] min-h-screen w-full flex flex-col items-center justify-center px-6 py-12">
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#FAD1E3] opacity-20 blur-[100px] pointer-events-none"></div>
-
       <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-10">
-          <img
-            src={MakeupMuseLogo}
-            alt="MakeupMuse Logo"
-            className="w-48 h-auto object-contain mb-6"
-          />
-          <h2
-            className="text-2xl text-[#332B2D] font-light text-center"
-            style={{ fontFamily: "'Julius Sans One', sans-serif" }}
-          >
+          <img src={MakeupMuseLogo} alt="Logo" className="w-48 h-auto mb-6" />
+          <h2 className="text-2xl text-[#332B2D] font-light">
             Create Your{" "}
             <span className="italic font-bold text-[#A55166]">Artistry</span>{" "}
             Profile
@@ -136,7 +115,7 @@ const RegisterPage = () => {
 
         <form
           onSubmit={onSubmit}
-          className="bg-white p-10 rounded-[40px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] border border-[#F2E8E4]"
+          className="bg-white p-10 rounded-[40px] shadow-lg border border-[#F2E8E4]"
         >
           <div className="space-y-6">
             <div>
@@ -165,7 +144,7 @@ const RegisterPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 p-1 focus:outline-none hover:bg-gray-100 rounded-full transition-colors"
+                  className="absolute right-4 focus:outline-none"
                 >
                   <EyeIcon visible={showPassword} />
                 </button>
@@ -200,7 +179,7 @@ const RegisterPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 p-1 focus:outline-none hover:bg-gray-100 rounded-full transition-colors"
+                  className="absolute right-4 focus:outline-none"
                 >
                   <EyeIcon visible={showConfirmPassword} />
                 </button>
@@ -209,17 +188,47 @@ const RegisterPage = () => {
 
             <button
               type="submit"
-              className="w-full bg-[#332B2D] text-white py-4 rounded-2xl font-bold tracking-widest text-xs uppercase hover:bg-[#A55166] transition-all duration-500 shadow-lg mt-4 active:scale-95"
+              className="w-full bg-[#332B2D] text-white py-4 rounded-2xl font-bold uppercase hover:bg-[#A55166] transition-all mt-4"
             >
               Sign Up
             </button>
           </div>
 
+          {/* PASSWORD RULES FOR DOCUMENTATION */}
+          <div className="mt-8 p-6 bg-[#FCFAFA] rounded-2xl border border-[#F2E8E4]">
+            <h3 className="text-[#332B2D] text-[10px] font-bold tracking-widest uppercase mb-4">
+              Password Requirements
+            </h3>
+            <ul className="space-y-3">
+              <li className="flex items-center text-[11px] text-[#7A6B6E]">
+                <div
+                  className={`w-2 h-2 rounded-full mr-3 ${password.length >= 8 ? "bg-green-500" : "bg-gray-300"}`}
+                ></div>
+                Must contain at least 8 characters
+              </li>
+              <li className="flex items-center text-[11px] text-[#7A6B6E]">
+                <div
+                  className={`w-2 h-2 rounded-full mr-3 ${/[A-Z]/.test(password) ? "bg-green-500" : "bg-gray-300"}`}
+                ></div>
+                Must contain one uppercase letter
+              </li>
+              <li className="flex items-center text-[11px] text-[#7A6B6E]">
+                <div
+                  className={`w-2 h-2 rounded-full mr-3 ${/[a-z]/.test(password) ? "bg-green-500" : "bg-gray-300"}`}
+                ></div>
+                Must contain one lowercase letter
+              </li>
+              <li className="flex items-center text-[11px] text-[#7A6B6E]">
+                <div
+                  className={`w-2 h-2 rounded-full mr-3 ${/\d/.test(password) ? "bg-green-500" : "bg-gray-300"}`}
+                ></div>
+                Must contain at least one number
+              </li>
+            </ul>
+          </div>
+
           <div className="mt-8 pt-8 border-t border-[#F2E8E4] text-center">
-            <p
-              className="text-[#7A6B6E] text-sm font-medium"
-              style={{ fontFamily: "'Julius Sans One', sans-serif" }}
-            >
+            <p className="text-[#7A6B6E] text-sm">
               Already a member?{" "}
               <Link
                 to="/signup"

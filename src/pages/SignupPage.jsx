@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import DOMPurify from "dompurify"; // <<<<< Added for XSS protection
+import DOMPurify from "dompurify";
 import MakeupMuseLogo from "../assets/images/makeupmuse.jpg";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -29,17 +29,22 @@ const LoginPage = () => {
     ? Math.max(0, 30 - Math.floor((Date.now() - otpSentTime) / 1000))
     : 0;
 
-  // Helper to sanitize user input
-  const sanitize = (value) => DOMPurify.sanitize(value);
+  // STRICT SANITIZATION: Prevents XSS by blocking brackets and cleaning the string
+  const sanitize = (value) => {
+    if (typeof value !== "string") return "";
+    // 1. Remove < and > immediately to block tag formation
+    const noBrackets = value.replace(/[<>]/g, "");
+    // 2. DOMPurify with strict no-tags policy
+    return DOMPurify.sanitize(noBrackets, { ALLOW_TAGS: [] });
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Sanitize inputs before sending
     const payload = {
       email: sanitize(email),
-      password: sanitize(password),
-      captchaValue: sanitize(captchaValue),
+      password: password, // Send raw for verification, sanitized in input handler anyway
+      captchaValue: captchaValue, // Already sanitized via onChange
     };
 
     try {
@@ -80,7 +85,7 @@ const LoginPage = () => {
   };
 
   const handleResendOtp = async () => {
-    const payload = { email: sanitize(email), password: sanitize(password) };
+    const payload = { email: sanitize(email), password: password };
 
     try {
       await axios.post(`${BACKEND_URL}/api/login`, payload);
@@ -129,7 +134,7 @@ const LoginPage = () => {
             <div>
               <label className={labelStyles}>Email Address</label>
               <input
-                type="email"
+                type="text"
                 placeholder="muse@example.com"
                 value={email}
                 onChange={(e) => setEmail(sanitize(e.target.value))}
@@ -154,7 +159,11 @@ const LoginPage = () => {
                   className="absolute right-4 top-10 cursor-pointer text-gray-500"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showPassword ? (
+                    <FaEyeSlash size={20} />
+                  ) : (
+                    <FaEye size={20} />
+                  )}
                 </span>
               </div>
             )}
@@ -209,7 +218,7 @@ const LoginPage = () => {
                 Don't have an account?{" "}
                 <Link
                   to="/register"
-                  className="text-[#A55166] font-bold hover:underline underline-offset-4 transition-all"
+                  className="text-[#A55166] font-bold hover:underline"
                 >
                   Sign Up
                 </Link>
