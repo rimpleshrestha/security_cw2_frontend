@@ -14,6 +14,10 @@ const RegisterPage = () => {
   const [passwordStrength, setPasswordStrength] = useState("");
   const navigate = useNavigate();
 
+  // UPDATED: Using HTTP to bypass browser SSL blocking during development
+  const BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:3000/api";
+
   const sanitize = (value) => {
     if (typeof value !== "string") return "";
     const noBrackets = value.replace(/[<>]/g, "");
@@ -53,17 +57,18 @@ const RegisterPage = () => {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/signup",
-        payload,
-      );
+      // Sending request to http://localhost:3000/api/signup
+      const response = await axios.post(`${BACKEND_URL}/signup`, payload);
 
       if ([200, 201].includes(response.status)) {
         toast.success("Account created successfully!");
         navigate("/signup");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Registration failed");
+      toast.error(
+        error.response?.data?.message ||
+          "Registration failed. Check server connection.",
+      );
     }
   };
 
@@ -188,13 +193,12 @@ const RegisterPage = () => {
 
             <button
               type="submit"
-              className="w-full bg-[#332B2D] text-white py-4 rounded-2xl font-bold uppercase hover:bg-[#A55166] transition-all mt-4"
+              className="w-full bg-[#332B2D] text-white py-4 rounded-2xl font-bold uppercase hover:bg-[#A55166] transition-all mt-4 active:scale-95"
             >
               Sign Up
             </button>
           </div>
 
-          {/* PASSWORD RULES FOR DOCUMENTATION */}
           <div className="mt-8 p-6 bg-[#FCFAFA] rounded-2xl border border-[#F2E8E4]">
             <h3 className="text-[#332B2D] text-[10px] font-bold tracking-widest uppercase mb-4">
               Password Requirements
@@ -210,19 +214,19 @@ const RegisterPage = () => {
                 <div
                   className={`w-2 h-2 rounded-full mr-3 ${/[A-Z]/.test(password) ? "bg-green-500" : "bg-gray-300"}`}
                 ></div>
-                Must contain one uppercase letter
+                One uppercase letter
               </li>
               <li className="flex items-center text-[11px] text-[#7A6B6E]">
                 <div
                   className={`w-2 h-2 rounded-full mr-3 ${/[a-z]/.test(password) ? "bg-green-500" : "bg-gray-300"}`}
                 ></div>
-                Must contain one lowercase letter
+                One lowercase letter
               </li>
               <li className="flex items-center text-[11px] text-[#7A6B6E]">
                 <div
                   className={`w-2 h-2 rounded-full mr-3 ${/\d/.test(password) ? "bg-green-500" : "bg-gray-300"}`}
                 ></div>
-                Must contain at least one number
+                One number
               </li>
             </ul>
           </div>

@@ -17,8 +17,9 @@ const LoginPage = () => {
   const [captchaValue, setCaptchaValue] = useState(null);
   const navigate = useNavigate();
 
+  // UPDATED: Using HTTP to bypass SSL "bodyguard" during development
   const BACKEND_URL =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:3000/api";
 
   const inputStyles =
     "w-full p-4 border border-[#F2E8E4] rounded-2xl text-black bg-[#FCFAFA] focus:outline-none focus:border-[#A55166] focus:ring-1 focus:ring-[#A55166] transition-all duration-300 placeholder:text-gray-300";
@@ -29,12 +30,9 @@ const LoginPage = () => {
     ? Math.max(0, 30 - Math.floor((Date.now() - otpSentTime) / 1000))
     : 0;
 
-  // STRICT SANITIZATION: Prevents XSS by blocking brackets and cleaning the string
   const sanitize = (value) => {
     if (typeof value !== "string") return "";
-    // 1. Remove < and > immediately to block tag formation
     const noBrackets = value.replace(/[<>]/g, "");
-    // 2. DOMPurify with strict no-tags policy
     return DOMPurify.sanitize(noBrackets, { ALLOW_TAGS: [] });
   };
 
@@ -43,12 +41,12 @@ const LoginPage = () => {
 
     const payload = {
       email: sanitize(email),
-      password: password, // Send raw for verification, sanitized in input handler anyway
-      captchaValue: captchaValue, // Already sanitized via onChange
+      password: password,
+      captchaValue: captchaValue,
     };
 
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/login`, payload);
+      const response = await axios.post(`${BACKEND_URL}/login`, payload);
       setCaptchaValue(null);
 
       if (response.data.mfaRequired) {
@@ -61,7 +59,8 @@ const LoginPage = () => {
     } catch (error) {
       setCaptchaValue(null);
       toast.error(
-        error.response?.data?.message || "Login failed due to server error",
+        error.response?.data?.message ||
+          "Login failed. Check if your server is running.",
       );
     }
   };
@@ -74,7 +73,7 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/verify-otp`, {
+      const response = await axios.post(`${BACKEND_URL}/verify-otp`, {
         email: sanitize(email),
         otp: sanitize(otp),
       });
@@ -88,7 +87,7 @@ const LoginPage = () => {
     const payload = { email: sanitize(email), password: password };
 
     try {
-      await axios.post(`${BACKEND_URL}/api/login`, payload);
+      await axios.post(`${BACKEND_URL}/login`, payload);
       toast.success("OTP resent to your email!");
       setOtpSentTime(Date.now());
     } catch (error) {
