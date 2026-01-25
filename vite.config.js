@@ -10,7 +10,7 @@ export default defineConfig({
     basicSsl(), 
   ],
   server: {
-    https: true, // This enables the secure server
+    https: true, 
     port: 5173,
   },
 });
