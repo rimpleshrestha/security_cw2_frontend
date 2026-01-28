@@ -12,6 +12,8 @@ import { Toaster } from "react-hot-toast";
 import MainLayout from "../layouts/MainLayout";
 import ProductList from "../pages/ProductList";
 import AboutUs from "../pages/AboutUs"; // <-- Added
+import ResetPassword from "../pages/ResetPassword";
+import RequestPasswordReset from "../pages/PasswordReset";
 
 const AppRouter = () => {
   const navigate = useNavigate();
@@ -44,6 +46,11 @@ const AppRouter = () => {
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/about" element={<AboutUs />} />{" "}
+            <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route
+                    path="/request-password-reset"
+                    element={<RequestPasswordReset />}
+                  />
           {/* <-- New About Us route */}
         </Route>
       </Routes>

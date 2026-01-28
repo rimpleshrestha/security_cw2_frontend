@@ -106,7 +106,8 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="bg-[#FAF8F7] min-h-screen w-full flex flex-col items-center justify-center px-6 py-12">
+    <div className="bg-[#FAF8F7] min-h-screen w-full flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+      {/* Decorative Blur Background */}
       <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#FAD1E3] opacity-20 blur-[100px] pointer-events-none"></div>
 
       <div className="w-full max-w-md relative z-10">
@@ -209,7 +210,7 @@ const LoginPage = () => {
           </div>
 
           {!mfaRequired && (
-            <div className="mt-8 pt-8 border-t border-[#F2E8E4] text-center">
+            <div className="mt-8 pt-8 border-t border-[#F2E8E4] text-center flex flex-col space-y-4">
               <p
                 className="text-[#7A6B6E] text-sm font-medium"
                 style={{ fontFamily: "'Julius Sans One', sans-serif" }}
@@ -222,6 +223,16 @@ const LoginPage = () => {
                   Sign Up
                 </Link>
               </p>
+
+              {/* Request Password Reset Link */}
+              <div>
+                <Link
+                  to="/request-password-reset"
+                  className="text-[10px] uppercase tracking-[0.2em] text-[#7A6B6E] hover:text-[#A55166] transition-colors duration-300 font-bold"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
             </div>
           )}
         </form>

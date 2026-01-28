@@ -7,6 +7,8 @@ import AboutUs from "./pages/AboutUs";
 // ✅ NEW IMPORTS: Add these so the app knows where these files are
 import ProductPage from "./pages/Productpage";
 import ProductList from "./pages/ProductList";
+import ResetPassword from "./pages/ResetPassword";
+import RequestPasswordReset from "./pages/PasswordReset";
 
 function App() {
   return (
@@ -17,6 +19,11 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/request-password-reset"
+          element={<RequestPasswordReset />}
+        />
 
         {/* ✅ NEW ROUTES: These must match the paths you use in navigate() */}
         <Route path="/product-page" element={<ProductPage />} />
