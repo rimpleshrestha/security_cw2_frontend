@@ -169,7 +169,7 @@ const Quiz = () => {
               href="/products"
               className="bg-[#332B2D] text-white px-10 py-4 rounded-full font-bold tracking-widest text-xs hover:bg-[#A55166] transition-all shadow-lg text-center"
             >
-              VIEW PRODUCTS FOR YOU
+              VIEW PRODUCTS FOR YOU!
             </a>
             <button
               onClick={() => window.location.reload()}
