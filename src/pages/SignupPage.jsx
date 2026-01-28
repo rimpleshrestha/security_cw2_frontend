@@ -27,7 +27,7 @@ const LoginPage = () => {
     "block mb-2 text-[#332B2D] text-xs font-bold tracking-widest uppercase ml-1";
 
   const otpCooldown = otpSentTime
-    ? Math.max(0, 30 - Math.floor((Date.now() - otpSentTime) / 1000))
+    ? Math.max(0, 120 - Math.floor((Date.now() - otpSentTime) / 1000))
     : 0;
 
   const sanitize = (value) => {
