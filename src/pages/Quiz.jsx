@@ -139,7 +139,7 @@ const Quiz = () => {
     setCurrentQuestionIndex((prev) => prev - 1);
   };
 
-  // Result View 
+  // Result 
   if (skinType) {
     const description = skinTypeDescriptions[skinType];
     return (
